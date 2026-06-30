@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/ui_kits/lims/index.html",
+      "permanent": false
+    }
+  ]
+}
