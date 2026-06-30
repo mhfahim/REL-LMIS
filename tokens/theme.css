@@ -1,0 +1,158 @@
+/* ============================================================
+   Reliance LIMS — Semantic theme layer (enterprise SaaS)
+   Deep navy/slate primary on a light, slate-neutral base.
+   White cards, hairline borders, status-only color.
+   All values concrete px / rgb. Dark mode under .dark.
+   ============================================================ */
+
+:root {
+  /* ---- Surfaces & text ---- */
+  --background: rgb(255, 255, 255);
+  --foreground: rgb(15, 23, 42);          /* slate-900 */
+  --card: rgb(255, 255, 255);
+  --card-foreground: rgb(15, 23, 42);
+  --popover: rgb(255, 255, 255);
+  --popover-foreground: rgb(15, 23, 42);
+
+  /* ---- Primary (deep navy / slate) ---- */
+  --primary: rgb(30, 41, 59);             /* slate-800 — deep navy/slate */
+  --primary-foreground: rgb(248, 250, 252);
+
+  /* ---- Secondary / muted / accent (slate neutrals) ---- */
+  --secondary: rgb(241, 245, 249);        /* slate-100 */
+  --secondary-foreground: rgb(30, 41, 59);
+  --muted: rgb(241, 245, 249);
+  --muted-foreground: rgb(100, 116, 139); /* slate-500 */
+  --accent: rgb(241, 245, 249);
+  --accent-foreground: rgb(30, 41, 59);
+
+  /* ---- Status ---- */
+  --destructive: rgb(220, 38, 38);        /* red-600 — disputed / locked / overdue / high-risk */
+  --destructive-foreground: rgb(248, 250, 252);
+  --success: rgb(22, 163, 74);            /* green-600 — clean / approved / safe */
+  --success-foreground: rgb(248, 250, 252);
+  --warning: rgb(217, 119, 6);            /* amber-600 — pending / under negotiation */
+  --warning-foreground: rgb(248, 250, 252);
+
+  /* ---- Brand = navy family (no decorative accent) ---- */
+  --brand: rgb(30, 41, 59);
+  --brand-foreground: rgb(248, 250, 252);
+  --brand-subtle: rgb(241, 245, 249);
+
+  /* ---- Lines & inputs ---- */
+  --border: rgb(226, 232, 240);           /* slate-200 */
+  --input: rgb(226, 232, 240);
+  --ring: rgb(30, 41, 59);
+
+  /* ---- Chart palette (navy-led, status-aligned) ---- */
+  --chart-1: rgb(30, 58, 138);            /* navy */
+  --chart-2: rgb(13, 148, 136);           /* teal */
+  --chart-3: rgb(22, 163, 74);            /* green */
+  --chart-4: rgb(217, 119, 6);            /* amber */
+  --chart-5: rgb(100, 116, 139);          /* slate */
+
+  /* ---- Sidebar (light, consistent) ---- */
+  --sidebar: rgb(248, 250, 252);          /* slate-50 */
+  --sidebar-foreground: rgb(15, 23, 42);
+  --sidebar-primary: rgb(30, 41, 59);
+  --sidebar-primary-foreground: rgb(248, 250, 252);
+  --sidebar-accent: rgb(241, 245, 249);
+  --sidebar-accent-foreground: rgb(30, 41, 59);
+  --sidebar-border: rgb(226, 232, 240);
+  --sidebar-ring: rgb(30, 41, 59);
+
+  /* ---- Radius scale ---- */
+  --radius: 8px;
+  --radius-sm: 2px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-full: 9999px;
+
+  /* ---- Spacing (4px grid) ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ---- Typography ---- */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: ui-serif, Georgia, serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+  --text-4xl: 36px;
+  --text-5xl: 48px;
+
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* ---- Shadows (restrained elevation) ---- */
+  --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.08);
+  --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
+}
+
+/* ============================================================
+   Dark mode — apply .dark on a wrapper element (slate dark).
+   ============================================================ */
+.dark {
+  --background: rgb(2, 6, 23);            /* slate-950 */
+  --foreground: rgb(248, 250, 252);
+  --card: rgb(15, 23, 42);               /* slate-900 */
+  --card-foreground: rgb(248, 250, 252);
+  --popover: rgb(15, 23, 42);
+  --popover-foreground: rgb(248, 250, 252);
+
+  --primary: rgb(248, 250, 252);
+  --primary-foreground: rgb(15, 23, 42);
+
+  --secondary: rgb(30, 41, 59);
+  --secondary-foreground: rgb(248, 250, 252);
+  --muted: rgb(30, 41, 59);
+  --muted-foreground: rgb(148, 163, 184);
+  --accent: rgb(30, 41, 59);
+  --accent-foreground: rgb(248, 250, 252);
+
+  --destructive: rgb(239, 68, 68);
+  --destructive-foreground: rgb(248, 250, 252);
+  --success: rgb(34, 197, 94);
+  --warning: rgb(245, 158, 11);
+
+  --brand: rgb(203, 213, 225);
+  --brand-foreground: rgb(15, 23, 42);
+  --brand-subtle: rgb(30, 41, 59);
+
+  --border: rgb(30, 41, 59);
+  --input: rgb(30, 41, 59);
+  --ring: rgb(148, 163, 184);
+
+  --sidebar: rgb(15, 23, 42);
+  --sidebar-foreground: rgb(241, 245, 249);
+  --sidebar-primary: rgb(248, 250, 252);
+  --sidebar-primary-foreground: rgb(15, 23, 42);
+  --sidebar-accent: rgb(30, 41, 59);
+  --sidebar-accent-foreground: rgb(241, 245, 249);
+  --sidebar-border: rgb(30, 41, 59);
+}

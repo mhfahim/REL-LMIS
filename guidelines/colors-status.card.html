@@ -1,0 +1,25 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Status & Brand" subtitle="Approved (green), pending (amber), risk (red), navy" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; font-family: var(--font-sans); background: var(--background); }
+  .wrap { padding: 24px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .sw { display: flex; flex-direction: column; gap: 8px; }
+  .chip { width: 96px; height: 56px; border-radius: var(--radius-md); border: 1px solid var(--border); }
+  .nm { font-size: 12px; font-weight: 600; color: var(--foreground); }
+  .vl { font-size: 11px; color: var(--muted-foreground); font-family: var(--font-mono); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="sw"><div class="chip" style="background:var(--destructive)"></div><span class="nm">Risk / disputed</span><span class="vl">red-600</span></div>
+  <div class="sw"><div class="chip" style="background:var(--success)"></div><span class="nm">Approved</span><span class="vl">green-600</span></div>
+  <div class="sw"><div class="chip" style="background:var(--warning)"></div><span class="nm">Pending</span><span class="vl">amber-600</span></div>
+  <div class="sw"><div class="chip" style="background:var(--brand)"></div><span class="nm">Navy</span><span class="vl">slate-800</span></div>
+  <div class="sw"><div class="chip" style="background:var(--brand-subtle)"></div><span class="nm">Navy subtle</span><span class="vl">slate-100</span></div>
+</div>
+</body>
+</html>

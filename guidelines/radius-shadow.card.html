@@ -1,0 +1,36 @@
+<!-- @dsCard group="Spacing" viewport="700x170" name="Radius & Elevation" subtitle="Corner radii and the shadow scale" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; font-family: var(--font-sans); background: var(--background); color: var(--foreground); }
+  .wrap { padding: 24px; display: flex; gap: 32px; flex-wrap: wrap; }
+  .group { display: flex; gap: 14px; }
+  .s { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .tile { width: 56px; height: 56px; background: var(--card); border: 1px solid var(--border); }
+  .lbl { font-size: 11px; font-family: var(--font-mono); color: var(--muted-foreground); }
+  .sec { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted-foreground); align-self: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="sec">Radius</span>
+  <div class="group">
+    <div class="s"><div class="tile" style="border-radius:var(--radius-sm)"></div><span class="lbl">sm·2</span></div>
+    <div class="s"><div class="tile" style="border-radius:var(--radius-md)"></div><span class="lbl">md·6</span></div>
+    <div class="s"><div class="tile" style="border-radius:var(--radius-lg)"></div><span class="lbl">lg·8</span></div>
+    <div class="s"><div class="tile" style="border-radius:var(--radius-xl)"></div><span class="lbl">xl·12</span></div>
+    <div class="s"><div class="tile" style="border-radius:var(--radius-full)"></div><span class="lbl">full</span></div>
+  </div>
+  <span class="sec">Shadow</span>
+  <div class="group">
+    <div class="s"><div class="tile" style="border:none;box-shadow:var(--shadow-xs)"></div><span class="lbl">xs</span></div>
+    <div class="s"><div class="tile" style="border:none;box-shadow:var(--shadow-sm)"></div><span class="lbl">sm</span></div>
+    <div class="s"><div class="tile" style="border:none;box-shadow:var(--shadow-md)"></div><span class="lbl">md</span></div>
+    <div class="s"><div class="tile" style="border:none;box-shadow:var(--shadow-lg)"></div><span class="lbl">lg</span></div>
+  </div>
+</div>
+</body>
+</html>

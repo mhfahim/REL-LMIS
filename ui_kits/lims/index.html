@@ -1,0 +1,184 @@
+<!-- @dsCard group="Reliance LIMS" viewport="1280x900" name="Inventory Dashboard" subtitle="KPIs, holding breakdown, alerts, transactions, quick actions" -->
+<!-- @startingPoint section="LIMS" subtitle="Land inventory app: dashboard + dag profile in the app shell" viewport="1280x900" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Reliance LIMS</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--background); }
+  * { box-sizing: border-box; }
+  /* Table readability: subtle row hover, tabular numerals */
+  .lims-table tbody tr { transition: background-color .12s ease; }
+  .lims-table tbody tr:hover td { background: var(--muted); }
+  .lims-table td, .lims-table th { font-variant-numeric: tabular-nums; }
+  .lims-link:hover { text-decoration: underline; }
+  .lims-rowlink { transition: background-color .12s ease; }
+  .lims-rowlink:hover { background: var(--muted); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="data.js"></script>
+<script type="text/babel" src="kit.jsx"></script>
+<script type="text/babel" src="AppShell.jsx"></script>
+<script type="text/babel" src="InventoryDashboard.jsx"></script>
+<script type="text/babel" src="InventoryOverview.jsx"></script>
+<script type="text/babel" src="DagProfile.jsx"></script>
+<script type="text/babel" src="DagDirectory.jsx"></script>
+<script type="text/babel" src="AddTransaction.jsx"></script>
+<script type="text/babel" src="TransactionLedger.jsx"></script>
+<script type="text/babel" src="TransactionDetail.jsx"></script>
+<script type="text/babel" src="DisputeManagement.jsx"></script>
+<script type="text/babel" src="MutationManagement.jsx"></script>
+<script type="text/babel" src="KhajnaManagement.jsx"></script>
+<script type="text/babel" src="ReportsManagement.jsx"></script>
+<script type="text/babel" src="UsersRoles.jsx"></script>
+<script type="text/babel" src="AuditLog.jsx"></script>
+<script type="text/babel" src="DataMigration.jsx"></script>
+<script type="text/babel" src="Settings.jsx"></script>
+<script type="text/babel" src="Auth.jsx"></script>
+<script type="text/babel">
+const { Card, CardContent, Button, Icon, Breadcrumb } = window.RelianceLIMSDesignSystem_12526c;
+const D = window.LIMS_DATA;
+
+// Placeholder for sections not yet built.
+function PermissionDenied({ label, onHome }) {
+  return (
+    <div style={{ padding: 24, fontFamily: "var(--font-sans)" }}>
+      <h2 style={{ margin: "0 0 16px", fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em" }}>{label}</h2>
+      <Card><CardContent style={{ padding: 48, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 12 }}>
+        <span style={{ width: 56, height: 56, borderRadius: "var(--radius-lg)", background: "rgba(220,38,38,0.10)", color: "var(--destructive)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}><Icon name="lock" size={26} /></span>
+        <div style={{ fontSize: 16, fontWeight: 600 }}>Access restricted</div>
+        <div style={{ fontSize: 14, color: "var(--muted-foreground)", maxWidth: 420, lineHeight: "var(--leading-normal)" }}>Your role does not have permission to view <strong>{label}</strong>. Contact an administrator if you need access.</div>
+        <Button variant="outline" size="sm" onClick={onHome}><Icon name="arrow-left" size={15} />Back to dashboard</Button>
+      </CardContent></Card>
+    </div>
+  );
+}
+
+// Placeholder for sections not yet built.
+function SectionPlaceholder({ item }) {
+  return (
+    <div style={{ padding: 24, fontFamily: "var(--font-sans)" }}>
+      <Breadcrumb items={[{ label: "Home", href: "#" }, { label: item.label }]} />
+      <div style={{ marginTop: 8, marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h2 style={{ margin: 0, fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em" }}>{item.label}</h2>
+        <Button variant="outline" size="sm" disabled><Icon name="plus" size={15} />New</Button>
+      </div>
+      <Card>
+        <CardContent style={{ padding: 48, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 12 }}>
+          <span style={{ width: 56, height: 56, borderRadius: "var(--radius-lg)", background: "var(--muted)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--muted-foreground)" }}>
+            <Icon name={item.icon} size={26} />
+          </span>
+          <div style={{ fontSize: 16, fontWeight: 600 }}>{item.label}</div>
+          <div style={{ fontSize: 14, color: "var(--muted-foreground)", maxWidth: 420, lineHeight: "var(--leading-normal)" }}>
+            This section is part of the navigation scaffold. The page layout will be added in a later step.
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function App() {
+  const [authed, setAuthed] = React.useState(false);
+  const [user, setUser] = React.useState(D.sessionUsers[0]);
+  const [active, setActive] = React.useState("dashboard");
+  const [selectedDag, setSelectedDag] = React.useState(D.dags[2]);
+  const [selectedTx, setSelectedTx] = React.useState(null);
+  const [dirFilter, setDirFilter] = React.useState(null);
+  if (!authed) return <window.AuthFlow onAuthenticated={() => { setActive("dashboard"); setAuthed(true); }} />;
+  const AppShell = window.AppShell, InventoryDashboard = window.InventoryDashboard, InventoryOverview = window.InventoryOverview, DagProfile = window.DagProfile, DagDirectory = window.DagDirectory, AddTransaction = window.AddTransaction, TransactionLedger = window.TransactionLedger, TransactionDetail = window.TransactionDetail;
+  const allNav = [...D.navMain, ...D.navAdmin];
+  const item = allNav.find((n) => n.id === active) || allNav[0];
+  const allowed = D.roleAccess[user.role] || allNav.map((n) => n.id);
+  const openDag = (dag) => { setSelectedDag(dag); setActive("dag-profile"); };
+  const openDagById = (id) => { const found = D.dags.find((x) => x.dag === id) || D.dags[2]; openDag(found); };
+  const openTx = (tx) => { setSelectedTx(tx); setActive("transaction-detail"); };
+  const openDirectory = (filter) => { setDirFilter(filter || null); setActive("dag-directory"); };
+  const stepDag = (dir) => { const i = D.dags.findIndex((x) => x.dag === selectedDag.dag); setSelectedDag(D.dags[(i + dir + D.dags.length) % D.dags.length]); };
+  function pickUser(u) {
+    setUser(u);
+    const acc = D.roleAccess[u.role] || [];
+    if (active !== "dag-profile" && active !== "notifications" && !acc.includes(active)) setActive("dashboard");
+  }
+
+  let content, title;
+  // Guard admin/role-restricted modules
+  if (active !== "dashboard" && active !== "dag-profile" && active !== "transaction-detail" && active !== "notifications" && !allowed.includes(active)) {
+    title = item.label;
+    content = <PermissionDenied label={item.label} onHome={() => setActive("dashboard")} />;
+  } else if (active === "dashboard") {
+    title = "Executive Dashboard";
+    content = <InventoryDashboard onOpenDag={(id) => id ? openDagById(id) : openDirectory()} onNavigate={setActive} />;
+  } else if (active === "inventory") {
+    title = "Inventory Overview";
+    content = <InventoryOverview onNavigate={setActive} onOpenFiltered={openDirectory} />;
+  } else if (active === "dag-directory") {
+    title = "Dag Directory";
+    content = <DagDirectory onOpenDag={openDag} initialFilter={dirFilter} />;
+  } else if (active === "dag-profile") {
+    title = "Dag Profile";
+    content = <DagProfile onNavigate={setActive} selectedDag={selectedDag} onBack={() => setActive("dag-directory")} onPrev={() => stepDag(-1)} onNext={() => stepDag(1)} />;
+  } else if (active === "add-transaction") {
+    title = "Add Transaction";
+    content = <AddTransaction onNavigate={setActive} />;
+  } else if (active === "ledger") {
+    title = "Transaction Ledger";
+    content = <TransactionLedger onNavigate={setActive} onOpenDag={openDagById} onOpenTransaction={openTx} />;
+  } else if (active === "transaction-detail") {
+    title = "Transaction Detail";
+    content = <TransactionDetail tx={selectedTx} onBack={() => setActive("ledger")} onOpenDag={openDagById} onNavigate={setActive} />;
+  } else if (active === "disputes") {
+    title = "Dispute Management";
+    content = <window.DisputeModule />;
+  } else if (active === "mutation") {
+    title = "Kharij / Mutation";
+    content = <window.MutationModule />;
+  } else if (active === "khajna") {
+    title = "Khajna";
+    content = <window.KhajnaModule />;
+  } else if (active === "reports") {
+    title = "Reports";
+    content = <window.ReportsModule />;
+  } else if (active === "users") {
+    title = "Users & Roles";
+    content = <window.UsersModule />;
+  } else if (active === "audit") {
+    title = "Audit Log";
+    content = <window.AuditModule />;
+  } else if (active === "migration") {
+    title = "Data Migration & Import";
+    content = <window.MigrationModule />;
+  } else if (active === "settings") {
+    title = "Settings";
+    content = <window.SettingsModule />;
+  } else if (active === "notifications") {
+    title = "Notifications";
+    content = <window.NotificationCenter />;
+  } else {
+    title = item.label;
+    content = <SectionPlaceholder item={item} />;
+  }
+
+  return (
+    <AppShell active={active} pageTitle={title} onNavigate={setActive} onBell={() => setActive("notifications")} onSignOut={() => setAuthed(false)} user={user} onPickUser={pickUser}>
+      {content}
+    </AppShell>
+  );
+}
+function mount() {
+  if (!window.AppShell || !window.InventoryDashboard || !window.InventoryOverview || !window.DagProfile || !window.DagDirectory || !window.AddTransaction || !window.TransactionLedger || !window.TransactionDetail || !window.DisputeModule || !window.MutationModule || !window.KhajnaModule || !window.ReportsModule || !window.UsersModule || !window.AuditModule || !window.MigrationModule || !window.SettingsModule || !window.NotificationCenter || !window.AuthFlow || !window.LIMSKit) { setTimeout(mount, 40); return; }
+  ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+}
+mount();
+</script>
+</body>
+</html>

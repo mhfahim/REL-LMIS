@@ -1,0 +1,13 @@
+/* ============================================================
+   Reliance LIMS Design System — global stylesheet entry point.
+   Consumers link THIS file. It is import-only by design.
+   ============================================================ */
+
+/* Webfonts (Inter + Geist Mono) */
+@import './tokens/fonts.css';
+
+/* Raw Figma Variable closure (every collection + mode) */
+@import './tokens/fig-tokens.css';
+
+/* Semantic theme layer (shadcn API: --background, --primary, …) */
+@import './tokens/theme.css';

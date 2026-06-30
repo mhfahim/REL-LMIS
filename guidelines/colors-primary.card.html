@@ -1,0 +1,26 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Primary & Neutral" subtitle="Zinc base — primary, secondary, muted, accent" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; font-family: var(--font-sans); background: var(--background); }
+  .wrap { padding: 24px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .sw { display: flex; flex-direction: column; gap: 8px; }
+  .chip { width: 96px; height: 56px; border-radius: var(--radius-md); border: 1px solid var(--border); }
+  .nm { font-size: 12px; font-weight: 600; color: var(--foreground); }
+  .vl { font-size: 11px; color: var(--muted-foreground); font-family: var(--font-mono); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="sw"><div class="chip" style="background:var(--primary)"></div><span class="nm">Primary</span><span class="vl">slate-800</span></div>
+  <div class="sw"><div class="chip" style="background:var(--secondary)"></div><span class="nm">Secondary</span><span class="vl">slate-100</span></div>
+  <div class="sw"><div class="chip" style="background:var(--muted)"></div><span class="nm">Muted</span><span class="vl">slate-100</span></div>
+  <div class="sw"><div class="chip" style="background:var(--muted-foreground)"></div><span class="nm">Muted fg</span><span class="vl">slate-500</span></div>
+  <div class="sw"><div class="chip" style="background:var(--border)"></div><span class="nm">Border</span><span class="vl">slate-200</span></div>
+  <div class="sw"><div class="chip" style="background:var(--background);border:1px solid var(--border)"></div><span class="nm">Background</span><span class="vl">white</span></div>
+</div>
+</body>
+</html>
