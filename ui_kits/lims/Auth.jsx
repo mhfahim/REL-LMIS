@@ -28,20 +28,22 @@
   }
 
   // ---------------- Login ----------------
-  function Login({ onForgot, onLogin }) {
+  function Login({ onForgot, onLogin, loading, authError }) {
     const [id, setId] = React.useState("");
     const [pw, setPw] = React.useState("");
     const [err, setErr] = React.useState(false);
-    function submit(e) {
+    async function submit(e) {
       e && e.preventDefault();
       if (!id.trim() || !pw.trim()) { setErr(true); return; }
-      setErr(false); onLogin();
+      setErr(false);
+      await onLogin(id.trim(), pw);
     }
     return (
       <Shell>
         <Header title="Sign in to Reliance LIMS" sub="Land Inventory Management System" />
         <CardContent style={{ padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
           {err ? <Alert variant="destructive" title="Enter your credentials" icon={<Icon name="alert-circle" size={17} />}>Both fields are required to continue.</Alert> : null}
+          {authError ? <Alert variant="destructive" title="Sign-in failed" icon={<Icon name="alert-circle" size={17} />}>{authError}</Alert> : null}
           <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               <Label>Email or phone</Label>
@@ -54,12 +56,12 @@
               </div>
               <Input type="password" placeholder="••••••••" value={pw} invalid={err && !pw.trim()} onChange={(e) => setPw(e.target.value)} />
             </div>
-            <Button type="submit" variant="default" style={{ width: "100%", height: 40 }}>Sign in<Icon name="arrow-right" size={15} /></Button>
+            <Button type="submit" variant="default" style={{ width: "100%", height: 40 }} disabled={loading}>{loading ? "Signing in…" : <>Sign in<Icon name="arrow-right" size={15} /></>}</Button>
           </form>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <Separator style={{ flex: 1 }} /><span style={{ fontSize: 12, color: "var(--muted-foreground)" }}>or</span><Separator style={{ flex: 1 }} />
           </div>
-          <Button variant="outline" style={{ width: "100%", height: 40 }} onClick={onLogin}>
+          <Button variant="outline" style={{ width: "100%", height: 40 }} onClick={() => onLogin(id.trim(), pw)} disabled={loading}>
             <span style={{ display: "inline-flex", width: 16, height: 16, borderRadius: "50%", background: "conic-gradient(#ea4335 0 25%, #fbbc05 25% 50%, #34a853 50% 75%, #4285f4 75% 100%)", flexShrink: 0 }} />
             Continue with Google Workspace
           </Button>
@@ -134,7 +136,33 @@
 
   function AuthFlow({ onAuthenticated }) {
     const [view, setView] = React.useState("login");
-    if (view === "login") return <Login onForgot={() => setView("forgot")} onLogin={() => setView("2fa")} />;
+    const [loginError, setLoginError] = React.useState("");
+    const [loading, setLoading] = React.useState(false);
+
+    const handleLogin = React.useCallback(async (email, password) => {
+      setLoading(true);
+      setLoginError("");
+      if (!window.supabase) {
+        setLoginError("Supabase client is unavailable. Check the connection settings.");
+        setLoading(false);
+        return;
+      }
+      try {
+        const { data, error } = await window.supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        if (data?.user) {
+          onAuthenticated();
+        } else {
+          setLoginError("Unable to sign in. Please try again.");
+        }
+      } catch (error) {
+        setLoginError(error?.message || "Unable to sign in with the provided credentials.");
+      } finally {
+        setLoading(false);
+      }
+    }, [onAuthenticated]);
+
+    if (view === "login") return <Login onForgot={() => setView("forgot")} onLogin={handleLogin} loading={loading} authError={loginError} />;
     if (view === "2fa") return <TwoFactor onVerify={onAuthenticated} onBack={() => setView("login")} />;
     return <ForgotPassword onBack={() => setView("login")} />;
   }

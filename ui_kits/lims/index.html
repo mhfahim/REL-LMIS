@@ -10,6 +10,7 @@
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../../_ds_bundle.js"></script>
 <style>
   html, body { margin: 0; height: 100%; background: var(--background); }
@@ -47,6 +48,54 @@
 <script type="text/babel">
 const { Card, CardContent, Button, Icon, Breadcrumb } = window.RelianceLIMSDesignSystem_12526c;
 const D = window.LIMS_DATA;
+const SUPABASE_URL = "https://unwixysdqruziiovxttv.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_ns9VffRaB0wDJCh6IeKlew_MLKEWJmW";
+const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+function initialsFromName(name) {
+  const parts = (name || "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "U";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}
+
+function inferRoleFromEmail(email) {
+  const value = (email || "").toLowerCase();
+  if (value.includes("admin")) return "Admin";
+  if (value.includes("chairman")) return "Chairman";
+  if (value.includes("rahman")) return "GM Land";
+  if (value.includes("karim")) return "Land Officer";
+  if (value.includes("ahmed")) return "SVCF / Finance";
+  if (value.includes("chowdhury")) return "Advocate";
+  if (value.includes("hasan")) return "Accounts";
+  return "GM Land";
+}
+
+async function buildUserFromSession(authUser) {
+  let profile = null;
+  let roleName = null;
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.from("profiles").select("*").eq("id", authUser.id).maybeSingle();
+      if (!error && data) profile = data;
+    } catch (e) {}
+    if (!profile) {
+      try {
+        const { data, error } = await supabase.from("user_roles").select("*").eq("user_id", authUser.id).maybeSingle();
+        if (!error && data) roleName = data.role_name || data.role || data.role_id || null;
+      } catch (e) {}
+    }
+  }
+  const name = profile?.full_name || profile?.display_name || profile?.name || authUser.user_metadata?.full_name || authUser.email || "Reliance User";
+  const role = profile?.role || roleName || inferRoleFromEmail(authUser.email || "");
+  return {
+    id: authUser.id,
+    name,
+    role,
+    initials: initialsFromName(name),
+    email: authUser.email,
+  };
+}
 
 // Placeholder for sections not yet built.
 function PermissionDenied({ label, onHome }) {
@@ -94,7 +143,62 @@ function App() {
   const [selectedDag, setSelectedDag] = React.useState(D.dags[2]);
   const [selectedTx, setSelectedTx] = React.useState(null);
   const [dirFilter, setDirFilter] = React.useState(null);
-  if (!authed) return <window.AuthFlow onAuthenticated={() => { setActive("dashboard"); setAuthed(true); }} />;
+
+  React.useEffect(() => {
+    let active = true;
+    async function hydrateSession() {
+      if (!supabase) return;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!active) return;
+      if (session?.user) {
+        const nextUser = await buildUserFromSession(session.user);
+        setUser(nextUser);
+        setAuthed(true);
+        setActive("dashboard");
+      } else {
+        setUser(D.sessionUsers[0]);
+        setAuthed(false);
+      }
+    }
+    hydrateSession();
+    const { data: { subscription } } = supabase ? supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!active) return;
+      if (session?.user) {
+        const nextUser = await buildUserFromSession(session.user);
+        setUser(nextUser);
+        setAuthed(true);
+        setActive("dashboard");
+      } else {
+        setUser(D.sessionUsers[0]);
+        setAuthed(false);
+      }
+    }) : { data: { subscription: null } };
+    return () => { active = false; subscription && subscription.unsubscribe(); };
+  }, []);
+
+  const handleAuthenticated = async () => {
+    if (!supabase) {
+      setAuthed(true);
+      setActive("dashboard");
+      return;
+    }
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      const nextUser = await buildUserFromSession(session.user);
+      setUser(nextUser);
+    }
+    setAuthed(true);
+    setActive("dashboard");
+  };
+
+  const handleSignOut = async () => {
+    if (supabase) await supabase.auth.signOut();
+    setUser(D.sessionUsers[0]);
+    setAuthed(false);
+    setActive("dashboard");
+  };
+
+  if (!authed) return <window.AuthFlow onAuthenticated={handleAuthenticated} />;
   const AppShell = window.AppShell, InventoryDashboard = window.InventoryDashboard, InventoryOverview = window.InventoryOverview, DagProfile = window.DagProfile, DagDirectory = window.DagDirectory, AddTransaction = window.AddTransaction, TransactionLedger = window.TransactionLedger, TransactionDetail = window.TransactionDetail;
   const allNav = [...D.navMain, ...D.navAdmin];
   const item = allNav.find((n) => n.id === active) || allNav[0];
@@ -169,7 +273,7 @@ function App() {
   }
 
   return (
-    <AppShell active={active} pageTitle={title} onNavigate={setActive} onBell={() => setActive("notifications")} onSignOut={() => setAuthed(false)} user={user} onPickUser={pickUser}>
+    <AppShell active={active} pageTitle={title} onNavigate={setActive} onBell={() => setActive("notifications")} onSignOut={handleSignOut} user={user} onPickUser={pickUser}>
       {content}
     </AppShell>
   );
