@@ -51,6 +51,7 @@ const D = window.LIMS_DATA;
 const SUPABASE_URL = "https://unwixysdqruziiovxttv.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_ns9VffRaB0wDJCh6IeKlew_MLKEWJmW";
 const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+window.supabaseClient = supabase;
 
 function initialsFromName(name) {
   const parts = (name || "").trim().split(/\s+/).filter(Boolean);

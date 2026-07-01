@@ -2,6 +2,7 @@
 // Exposes window.AuthFlow({ onAuthenticated }).
 (function () {
   const { Card, CardContent, Icon, Button, Input, Label, Logo, Alert, Separator } = window.RelianceLIMSDesignSystem_12526c;
+  const getSupabaseClient = () => window.supabaseClient || window.supabase || null;
 
   function Shell({ children, footer }) {
     return (
@@ -28,7 +29,7 @@
   }
 
   // ---------------- Login ----------------
-  function Login({ onForgot, onLogin, loading, authError }) {
+  function Login({ onForgot, onLogin, onGoogle, loading, authError }) {
     const [id, setId] = React.useState("");
     const [pw, setPw] = React.useState("");
     const [err, setErr] = React.useState(false);
@@ -61,7 +62,7 @@
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <Separator style={{ flex: 1 }} /><span style={{ fontSize: 12, color: "var(--muted-foreground)" }}>or</span><Separator style={{ flex: 1 }} />
           </div>
-          <Button variant="outline" style={{ width: "100%", height: 40 }} onClick={() => onLogin(id.trim(), pw)} disabled={loading}>
+          <Button type="button" variant="outline" style={{ width: "100%", height: 40 }} onClick={onGoogle} disabled={loading}>
             <span style={{ display: "inline-flex", width: 16, height: 16, borderRadius: "50%", background: "conic-gradient(#ea4335 0 25%, #fbbc05 25% 50%, #34a853 50% 75%, #4285f4 75% 100%)", flexShrink: 0 }} />
             Continue with Google Workspace
           </Button>
@@ -139,18 +140,43 @@
     const [loginError, setLoginError] = React.useState("");
     const [loading, setLoading] = React.useState(false);
 
+    const checkApprovedAccess = React.useCallback(async (email) => {
+      const supabase = getSupabaseClient();
+      if (!supabase) return false;
+      const normalizedEmail = (email || "").trim().toLowerCase();
+      if (!normalizedEmail) return false;
+      try {
+        const { data, error } = await supabase.from("profiles").select("email, role").eq("email", normalizedEmail).maybeSingle();
+        if (!error && data) return Boolean(data.email);
+        if (!error && !data) {
+          const fallback = await supabase.from("invitations").select("email").eq("email", normalizedEmail).maybeSingle();
+          return !fallback.error && Boolean(fallback.data?.email);
+        }
+      } catch (error) {
+        console.error("Approval lookup failed", error);
+      }
+      return false;
+    }, []);
+
     const handleLogin = React.useCallback(async (email, password) => {
       setLoading(true);
       setLoginError("");
-      if (!window.supabase) {
+      const supabase = getSupabaseClient();
+      if (!supabase) {
         setLoginError("Supabase client is unavailable. Check the connection settings.");
         setLoading(false);
         return;
       }
       try {
-        const { data, error } = await window.supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         if (data?.user) {
+          const approved = await checkApprovedAccess(data.user.email);
+          if (!approved) {
+            await supabase.auth.signOut();
+            setLoginError("Your account is not approved for access. Please contact the administrator.");
+            return;
+          }
           onAuthenticated();
         } else {
           setLoginError("Unable to sign in. Please try again.");
@@ -160,9 +186,32 @@
       } finally {
         setLoading(false);
       }
-    }, [onAuthenticated]);
+    }, [checkApprovedAccess, onAuthenticated]);
 
-    if (view === "login") return <Login onForgot={() => setView("forgot")} onLogin={handleLogin} loading={loading} authError={loginError} />;
+    const handleGoogle = React.useCallback(async () => {
+      setLoading(true);
+      setLoginError("");
+      const supabase = getSupabaseClient();
+      if (!supabase) {
+        setLoginError("Supabase client is unavailable. Check the connection settings.");
+        setLoading(false);
+        return;
+      }
+      try {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: window.location.origin + window.location.pathname,
+          },
+        });
+        if (error) throw error;
+      } catch (error) {
+        setLoginError(error?.message || "Google sign-in could not be started.");
+        setLoading(false);
+      }
+    }, []);
+
+    if (view === "login") return <Login onForgot={() => setView("forgot")} onLogin={handleLogin} onGoogle={handleGoogle} loading={loading} authError={loginError} />;
     if (view === "2fa") return <TwoFactor onVerify={onAuthenticated} onBack={() => setView("login")} />;
     return <ForgotPassword onBack={() => setView("login")} />;
   }
