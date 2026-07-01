@@ -140,17 +140,36 @@
     const [loginError, setLoginError] = React.useState("");
     const [loading, setLoading] = React.useState(false);
 
+    React.useEffect(() => {
+      const params = new URLSearchParams(window.location.search);
+      const authError = params.get("auth_error");
+      if (authError === "not_approved") {
+        setLoginError("Your account is not approved for access. Please contact the administrator.");
+        const nextUrl = new URL(window.location.href);
+        nextUrl.searchParams.delete("auth_error");
+        window.history.replaceState({}, "", `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
+      }
+    }, []);
+
     const checkApprovedAccess = React.useCallback(async (email) => {
       const supabase = getSupabaseClient();
       if (!supabase) return false;
       const normalizedEmail = (email || "").trim().toLowerCase();
       if (!normalizedEmail) return false;
       try {
-        const { data, error } = await supabase.from("profiles").select("email, role").eq("email", normalizedEmail).maybeSingle();
-        if (!error && data) return Boolean(data.email);
-        if (!error && !data) {
-          const fallback = await supabase.from("invitations").select("email").eq("email", normalizedEmail).maybeSingle();
-          return !fallback.error && Boolean(fallback.data?.email);
+        const { data: profileData, error: profileError } = await supabase.from("profiles").select("email, role").limit(100);
+        if (!profileError && Array.isArray(profileData)) {
+          const profileMatch = profileData.find((row) => (row?.email || "").toLowerCase() === normalizedEmail);
+          if (profileMatch) return true;
+        }
+        const { data: invitationData, error: invitationError } = await supabase.from("invitations").select("email, status").limit(100);
+        if (!invitationError && Array.isArray(invitationData)) {
+          const acceptedInvitation = invitationData.find((row) => {
+            const rowEmail = (row?.email || "").toLowerCase();
+            const status = (row?.status || "").toLowerCase();
+            return rowEmail === normalizedEmail && (status === "accepted" || status === "active");
+          });
+          return Boolean(acceptedInvitation);
         }
       } catch (error) {
         console.error("Approval lookup failed", error);
@@ -182,7 +201,7 @@
           setLoginError("Unable to sign in. Please try again.");
         }
       } catch (error) {
-        setLoginError(error?.message || "Unable to sign in with the provided credentials.");
+        setLoginError("Invalid email or password.");
       } finally {
         setLoading(false);
       }

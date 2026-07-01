@@ -53,6 +53,57 @@ const SUPABASE_ANON_KEY = "sb_publishable_ns9VffRaB0wDJCh6IeKlew_MLKEWJmW";
 const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 window.supabaseClient = supabase;
 
+function normalizeEmail(value) {
+  return (value || "").trim().toLowerCase();
+}
+
+async function logAuthAuditEvent(supabaseClient, user, source) {
+  if (!supabaseClient || !user?.id) return;
+  const payload = {
+    action: "google_login_blocked",
+    result: "blocked",
+    risk_level: "medium",
+    user_id: user.id,
+    email: normalizeEmail(user.email || ""),
+    source: source || "google",
+  };
+  const tables = ["audit_events", "audit_logs", "audit_log"];
+  for (const table of tables) {
+    try {
+      const { error } = await supabaseClient.from(table).insert(payload);
+      if (!error) return;
+    } catch (e) {}
+  }
+}
+
+async function checkApprovedAccess(supabaseClient, email) {
+  const normalizedEmail = normalizeEmail(email);
+  if (!supabaseClient || !normalizedEmail) return false;
+  try {
+    const { data: profileData, error: profileError } = await supabaseClient.from("profiles").select("email, role").limit(100);
+    if (!profileError && Array.isArray(profileData)) {
+      const profileMatch = profileData.find((row) => normalizeEmail(row?.email) === normalizedEmail);
+      if (profileMatch) return true;
+    }
+    const { data: invitationData, error: invitationError } = await supabaseClient.from("invitations").select("email, status").limit(100);
+    if (!invitationError && Array.isArray(invitationData)) {
+      const acceptedInvitation = invitationData.find((row) => {
+        const rowEmail = normalizeEmail(row?.email);
+        const status = normalizeEmail(row?.status || "");
+        return rowEmail === normalizedEmail && (status === "accepted" || status === "active");
+      });
+      return Boolean(acceptedInvitation);
+    }
+  } catch (e) {}
+  return false;
+}
+
+function redirectToLoginWithError() {
+  const url = new URL(window.location.href);
+  url.searchParams.set("auth_error", "not_approved");
+  window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+}
+
 function initialsFromName(name) {
   const parts = (name || "").trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "U";
@@ -152,6 +203,15 @@ function App() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!active) return;
       if (session?.user) {
+        const approved = await checkApprovedAccess(supabase, session.user.email);
+        if (!approved) {
+          await logAuthAuditEvent(supabase, session.user, "google");
+          await supabase.auth.signOut();
+          redirectToLoginWithError();
+          setUser(D.sessionUsers[0]);
+          setAuthed(false);
+          return;
+        }
         const nextUser = await buildUserFromSession(session.user);
         setUser(nextUser);
         setAuthed(true);
@@ -165,6 +225,15 @@ function App() {
     const { data: { subscription } } = supabase ? supabase.auth.onAuthStateChange(async (event, session) => {
       if (!active) return;
       if (session?.user) {
+        const approved = await checkApprovedAccess(supabase, session.user.email);
+        if (!approved) {
+          await logAuthAuditEvent(supabase, session.user, "google");
+          await supabase.auth.signOut();
+          redirectToLoginWithError();
+          setUser(D.sessionUsers[0]);
+          setAuthed(false);
+          return;
+        }
         const nextUser = await buildUserFromSession(session.user);
         setUser(nextUser);
         setAuthed(true);
