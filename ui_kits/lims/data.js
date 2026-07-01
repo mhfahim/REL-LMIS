@@ -132,6 +132,11 @@ window.LIMS_DATA = {
     { mouza: "Char Bhadrasan", dags: 342, area: "172.90", clean: "118.60", disputed: "39.40", neg: "14.90" },
     { mouza: "Kalibari", dags: 328, area: "118.00", clean: "88.00", disputed: "12.60", neg: "17.40" },
   ],
+  inventoryByBucket: [
+    { bucket: "Clean land", dags: 822, area: "498.20", clean: "498.20", disputed: "0.00", neg: "0.00", locked: 12, balance: "412.60", status: "Clean" },
+    { bucket: "Disputed land", dags: 86, area: "86.40", clean: "0.00", disputed: "86.40", neg: "0.00", locked: 24, balance: "12.10", status: "Disputed" },
+    { bucket: "Under negotiation land", dags: 74, area: "57.90", clean: "0.00", disputed: "0.00", neg: "57.90", locked: 16, balance: "18.40", status: "Under Negotiation" },
+  ],
   inventoryRisk: [
     { icon: "gavel", tone: "destructive", label: "Disputed dags", value: "86", detail: "12 currently in court", go: "disputes" },
     { icon: "file-signature", tone: "warning", label: "Mutation pending > 30 days", value: "8", detail: "oldest 47 days", go: "mutation" },
