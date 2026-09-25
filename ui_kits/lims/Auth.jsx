@@ -157,7 +157,7 @@
       const normalizedEmail = (email || "").trim().toLowerCase();
       if (!normalizedEmail) return false;
       try {
-        const { data: profileData, error: profileError } = await supabase.from("profiles").select("email, role").limit(100);
+        const { data: profileData, error: profileError } = await supabase.from("profiles").select("email").limit(100);
         if (!profileError && Array.isArray(profileData)) {
           const profileMatch = profileData.find((row) => (row?.email || "").toLowerCase() === normalizedEmail);
           if (profileMatch) return true;
